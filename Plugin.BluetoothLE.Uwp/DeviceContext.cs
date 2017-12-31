@@ -67,8 +67,9 @@ namespace Plugin.BluetoothLE
                 {
                     System.Diagnostics.Debug.WriteLine(e.ToString());
                 }
-                this.subscribers.Clear();
             }
+            this.subscribers.Clear();
+
             var result = await this.NativeDevice.GetGattServicesAsync(BluetoothCacheMode.Cached);
             foreach (var s in result.Services)
             {
