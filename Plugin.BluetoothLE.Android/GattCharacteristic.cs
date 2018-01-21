@@ -246,12 +246,20 @@ namespace Plugin.BluetoothLE
             return true;
         }
 
+        public static string ByteArrayToString(byte[] ba)
+        {
+            System.Text.StringBuilder hex = new System.Text.StringBuilder(ba.Length * 2);
+            foreach (byte b in ba)
+                hex.AppendFormat("{0:x2}", b);
+            return hex.ToString();
+        }
 
         IObservable<object> RawWriteWithResponse(byte[] bytes) => this.context.Marshall(() =>
         {
             this.native.SetValue(bytes);
             this.native.WriteType = GattWriteType.Default;
             this.context.Gatt.WriteCharacteristic(this.native);
+            Log.Debug("wrsp", ByteArrayToString(bytes));
         });
 
 
@@ -262,6 +270,7 @@ namespace Plugin.BluetoothLE
                 this.native.SetValue(bytes);
                 this.native.WriteType = GattWriteType.NoResponse;
                 this.context.Gatt.WriteCharacteristic(this.native);
+                Log.Debug("writ", ByteArrayToString(bytes));
                 this.Value = bytes;
 
                 var result = new CharacteristicResult(this, CharacteristicEvent.Write, bytes);

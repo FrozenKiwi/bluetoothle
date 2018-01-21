@@ -119,11 +119,18 @@ namespace Plugin.BluetoothLE
             });
             return this.notificationOb;
         }
-
+        public static string ByteArrayToString(byte[] ba)
+        {
+            System.Text.StringBuilder hex = new System.Text.StringBuilder(ba.Length * 2);
+            foreach (byte b in ba)
+                hex.AppendFormat("{0:x2}", b);
+            return hex.ToString();
+        }
 
         public override async void WriteWithoutResponse(byte[] value)
         {
             this.AssertWrite(false);
+            Log.Debug("writ", ByteArrayToString(value));
             await this.Native.WriteValueAsync(value.AsBuffer(), GattWriteOption.WriteWithoutResponse);
             this.Value = value;
         }
@@ -136,6 +143,8 @@ namespace Plugin.BluetoothLE
 
             return Observable.FromAsync(async ct =>
             {
+                Log.Debug("wrsp", ByteArrayToString(value));
+
                 var result = await this.Native
                     .WriteValueAsync(value.AsBuffer(), GattWriteOption.WriteWithResponse)
                     .AsTask(ct);
