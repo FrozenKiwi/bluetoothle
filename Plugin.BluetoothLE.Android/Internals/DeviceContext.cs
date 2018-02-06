@@ -3,6 +3,7 @@ using Android.Bluetooth;
 using Android.OS;
 using Java.Lang;
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -72,7 +73,8 @@ namespace Plugin.BluetoothLE.Internals
             };
         });
 
-
+        ConcurrentQueue<Action> actions = new ConcurrentQueue<Action>();
+        int IsProcessingQueue = 0;
         public IObservable<object> Marshall(Action action) => Observable.Create<object>(ob =>
         {
             if (CrossBleAdapter.AndroidPerformActionsOnMainThread)
@@ -92,7 +94,19 @@ namespace Plugin.BluetoothLE.Internals
             }
             else
             {
-                action();
+                // Only allow 1 thread at a time to talk to the underlying GATT library.
+                // (note, this doesn't mean the current thread will block till write is complete)
+                actions.Enqueue(action);
+                var anyoneProcessing = System.Threading.Interlocked.CompareExchange(ref IsProcessingQueue, 1, 0);
+                if (anyoneProcessing == 0)
+                {
+                    Action anAction = null;
+                    while (actions.TryDequeue(out anAction))
+                    {
+                        anAction();
+                    }
+                    IsProcessingQueue = 0;
+                }
                 ob.Respond(null);
             }
             return Disposable.Empty;

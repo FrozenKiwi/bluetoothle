@@ -121,8 +121,7 @@ namespace Plugin.BluetoothLE
                 return this
                 .WhenServiceDiscovered()
                 .Where(x => x.Uuid.Equals(serviceUuid))
-                .Take(1)
-                .Select(x => x);
+                .FirstOrDefaultAsync();
             }
             else
             {

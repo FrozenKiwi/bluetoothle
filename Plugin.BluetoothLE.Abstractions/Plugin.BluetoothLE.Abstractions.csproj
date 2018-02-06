@@ -6,6 +6,11 @@
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <DebugType>full</DebugType>
+      <DebugSymbols>true</DebugSymbols>
+    </PropertyGroup>
+
     <ItemGroup>
       <Compile Include="..\Plugin.BluetoothLE.Shared\CommonAssemblyInfo.cs" Link="CommonAssemblyInfo.cs" />
     </ItemGroup>

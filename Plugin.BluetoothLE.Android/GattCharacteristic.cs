@@ -269,8 +269,18 @@ namespace Plugin.BluetoothLE
             {
                 this.native.SetValue(bytes);
                 this.native.WriteType = GattWriteType.NoResponse;
-                this.context.Gatt.WriteCharacteristic(this.native);
-                Log.Debug("writ", ByteArrayToString(bytes));
+                for (int i = 0; i < 5; i++)
+                {
+                    bool writeSuccess = this.context.Gatt.WriteCharacteristic(this.native);
+                    var tid = System.Threading.Thread.CurrentThread.ManagedThreadId;
+                    if (writeSuccess)
+                    {
+                        Log.Debug("writ", tid.ToString() + " - " + ByteArrayToString(bytes));
+                        break;
+                    }
+                    Log.Error("writ", tid.ToString() + "Failed writing: " + ByteArrayToString(bytes));
+                    Task.Delay(100).Wait();
+                }
                 this.Value = bytes;
 
                 var result = new CharacteristicResult(this, CharacteristicEvent.Write, bytes);
